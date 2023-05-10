@@ -1,11 +1,13 @@
 package org.example;
 
+import org.apache.commons.compress.archivers.zip.Zip64Mode;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -25,34 +27,25 @@ public class CommonZipUtils {
         }
     }
 
-    private static void doZip(File file, ZipArchiveOutputStream zaos) throws IOException {
-        if (file.isDirectory()) {
-            ZipArchiveEntry zae = new ZipArchiveEntry(file, file.getPath());
-            zaos.putArchiveEntry(zae);
-            zaos.closeArchiveEntry();
-            return;
-        }
-
-        ZipArchiveEntry zae = new ZipArchiveEntry(file, file.getPath());
-        try (FileInputStream fis = new FileInputStream(file)) {
-            zaos.putArchiveEntry(zae);
-            IOUtils.copy(fis, zaos);
-            zaos.closeArchiveEntry();
-        }
-    }
-
     public static void doZip(String input, String output) throws IOException {
         createFolder(output);
         try (ZipArchiveOutputStream zaos = new ZipArchiveOutputStream(new FileOutputStream(output))) {
-            //zaos.setEncoding();
-            //zaos.setUseZip64(Zip64Mode.AsNeeded);
+            zaos.setEncoding(StandardCharsets.UTF_8.name());
+            zaos.setUseZip64(Zip64Mode.AsNeeded);
             zaos.setLevel(Deflater.BEST_SPEED);
             zaos.setMethod(ZipEntry.DEFLATED);
             zaos.setComment("create by java");
 
             List<File> list = Files.walk(new File(input).toPath()).map(Path::toFile).collect(Collectors.toList());
-            for (File f : list) {
-                doZip(f, zaos);
+            for (File file : list) {
+                ZipArchiveEntry zae = new ZipArchiveEntry(file, file.getPath());
+                zaos.putArchiveEntry(zae);
+                if (file.isFile()) {
+                    try (FileInputStream fis = new FileInputStream(file)) {
+                        IOUtils.copy(fis, zaos);
+                    }
+                }
+                zaos.closeArchiveEntry();
             }
 
             zaos.finish();

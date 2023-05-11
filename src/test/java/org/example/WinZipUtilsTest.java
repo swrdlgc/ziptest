@@ -11,11 +11,21 @@ import java.util.zip.DataFormatException;
  * @date 2023/5/9
  */
 public class WinZipUtilsTest {
+    String password = "password";
+
     @Test
-    public void test0() throws IOException, DataFormatException {
-        String password = "password";
-        WinZipUtils.doZip("doc", "output4/all.zip", password);
-        WinZipUtils.doUnzip("output4/all.zip", "output4", password);
-        Zip4jUtils.doUnzip("output4/all.zip", "output4", password);
+    public void test0() throws IOException {
+        String output = "output.winzip0";
+
+        CommonZipUtils.doZip("doc", output + "/all.tmp.zip");
+        WinZipUtils.encrypt(output + "/all.tmp.zip", output + "/all.zip", password);
+        Zip4jUtils.doUnzip(output + "/all.zip", output, password);
+    }
+
+    @Test
+    public void test1() throws IOException, DataFormatException {
+        String output = "output.winzip1";
+        WinZipUtils.doZip("doc", output + "/all.zip", password);
+        WinZipUtils.doUnzip(output + "/all.zip", output, password);
     }
 }

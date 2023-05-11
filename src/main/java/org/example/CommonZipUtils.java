@@ -17,18 +17,8 @@ import java.util.zip.ZipEntry;
 
 public class CommonZipUtils {
 
-    public static void createFolder(String path) throws IOException {
-        int idx = path.lastIndexOf(File.separatorChar);
-        if (idx != -1) {
-            String dir = path.substring(0, idx + 1);
-            Files.createDirectories(new File(dir).toPath());
-        } else {
-            Files.createDirectories(new File(path).toPath());
-        }
-    }
-
     public static void doZip(String input, String output) throws IOException {
-        createFolder(output);
+        FileUtils.createParentDirectories(output);
         try (ZipArchiveOutputStream zaos = new ZipArchiveOutputStream(new FileOutputStream(output))) {
             zaos.setEncoding(StandardCharsets.UTF_8.name());
             zaos.setUseZip64(Zip64Mode.AsNeeded);
@@ -53,12 +43,13 @@ public class CommonZipUtils {
     }
 
     public static void doUnzip(String input, String output) throws IOException {
+        FileUtils.createParentDirectories(output);
         try (ZipArchiveInputStream zais = new ZipArchiveInputStream(
                 new BufferedInputStream(new FileInputStream(input)))) {
             ZipArchiveEntry zae;
             while ((zae = zais.getNextZipEntry()) != null) {
                 String name = output + File.separatorChar + zae.getName();
-                createFolder(name);
+                FileUtils.createParentDirectories(name);
                 if (zae.isDirectory()) continue;
                 IOUtils.copy(zais, new FileOutputStream(name));
             }

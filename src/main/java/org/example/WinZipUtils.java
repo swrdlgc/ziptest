@@ -49,5 +49,6 @@ public class WinZipUtils {
             if (entry.isDirectory()) continue;
             azfd.extractEntry(entry, new File(name), password);
         }
+        azfd.close();
     }
 }
